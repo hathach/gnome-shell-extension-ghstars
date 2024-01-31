@@ -1,0 +1,8 @@
+{
+  "url": "https://github.com/hathach/tinyusb",
+  "uuid": "github-stars@tinyusb.org",
+  "name": "GitHub Star Counter",
+  "description": "Shows star count of a GitHub repository",
+  "shell-version": ["42", "43"]
+}
+
