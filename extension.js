@@ -2,8 +2,7 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const St = imports.gi.St;
 const Main = imports.ui.main;
-const Soup = imports.gi.Soup;
-const GLib = imports.gi.GLib;
+const {GLib, Soup} = imports.gi;
 const Clutter = imports.gi.Clutter;
 const PanelMenu = imports.ui.panelMenu;
 const GObject = imports.gi.GObject;
@@ -45,14 +44,26 @@ class GitHubStars extends PanelMenu.Button {
         let message = Soup.Message.new('GET', url);
         message.request_headers.append('User-Agent', 'GNOME Shell Extension (github-stars@tinyusb.org)');
 
-        _httpSession.queue_message(message, (session, message) => {
-            if (message.status_code == 200) {
-              let json = JSON.parse(message.response_body.data);
-              let stars = json.stargazers_count.toString();
-              // this.accessible_name = `GitHub Stars: ${stars}`; // Set tooltip text here
-              this.starCounterLabel.set_text(`Stars ${stars}`);
-            } else {
-                global.log(`Error fetching star count: Status Code ${message.status_code}`);
+        _httpSession.send_and_read_async(message, GLib.PRIORITY_DEFAULT, null, (session, result) => {
+            try {
+                if (message.get_status() === Soup.Status.OK) {
+                    let responseBytes = _httpSession.send_and_read_finish(result);
+                    let decoder = new TextDecoder('utf-8');
+                    let response = decoder.decode(responseBytes.get_data());                
+                    let json = JSON.parse(response);
+                    if (json && json.stargazers_count !== undefined) {
+                        let stars = json.stargazers_count.toString();
+                        this.starCounterLabel.set_text(`Stars: ${stars}`);
+                    } else {
+                        this.starCounterLabel.set_text("Stars: error");
+                    }
+                } else {
+                    this.starCounterLabel.set_text("Stars: error");
+                    this._scheduleRetry();
+                }
+            } catch (e) {
+                global.logError(`Exception in _getStarCount: ${e}`);
+                this.starCounterLabel.set_text("Stars: error");
                 this._scheduleRetry();
             }
         });
