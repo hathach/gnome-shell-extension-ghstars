@@ -76,7 +76,8 @@ class GitHubStars extends PanelMenu.Button {
                                     }
                                 }
                             }                            
-                            this.starCounterLabel.set_text(`${stars} ⭐ ${forks} 🔱 ${issues} 🎯 ${pulls} 🧩`);
+                            // this.starCounterLabel.set_text(`${stars} ⭐ ${forks} 🔱 ${issues} 🎯 ${pulls} 🧩`);
+                            this.starCounterLabel.set_text(`${stars} ⭐ ${issues} 🎯 ${pulls} 🧩`);
                         } catch (e) {
                             global.logError(`Exception in _getRepoDetails (pulls): ${e}`);
                         }
